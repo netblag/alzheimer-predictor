@@ -32,7 +32,7 @@
 ---
 
 ## شروع سریع
-
+ 
 ```bash
 # ۱. کلون
 git clone https://github.com/netblag/alzheimer-predictor.git
