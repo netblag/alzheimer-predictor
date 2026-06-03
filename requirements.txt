@@ -1,0 +1,30 @@
+# Core ML
+numpy
+pandas
+scikit-learn
+xgboost
+lightgbm
+imbalanced-learn
+scipy
+
+# Explainability
+shap
+
+# Visualization
+matplotlib
+seaborn
+plotly
+
+# API
+fastapi
+uvicorn[standard]
+pydantic
+
+# Utilities
+joblib
+python-multipart
+
+# Testing
+pytest
+pytest-cov
+httpx

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Alzheimer's Risk AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --purple:#7B2FBE;--purple-light:#9D4EDD;--purple-dark:#5A1F8E;
+  --cyan:#4CC9F0;--bg:#0D0A1A;--bg2:#130D22;--bg3:#1C1230;--bg4:#241840;
+  --border:rgba(155,100,255,0.12);--text:#EEE8FF;--text2:#9980CC;--text3:#5A4880;
+  --green:#22d3a0;--yellow:#F59E0B;--red:#E63946;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Vazirmatn',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:font-family .1s;}
+body.lang-en{font-family:'DM Sans',sans-serif;}
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(123,47,190,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(123,47,190,.04) 1px,transparent 1px);
+  background-size:44px 44px;}
+.bg-glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:900px;height:450px;
+  background:radial-gradient(ellipse,rgba(123,47,190,.1) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 24px 64px;}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;padding:28px 0 40px;border-bottom:1px solid var(--border);margin-bottom:40px;}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-icon{width:46px;height:46px;background:linear-gradient(135deg,var(--purple),var(--purple-dark));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 0 28px rgba(123,47,190,.5);animation:pulse-glow 2s ease-in-out infinite;}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 22px rgba(123,47,190,.4);}50%{box-shadow:0 0 44px rgba(123,47,190,.75);}}
+.logo-text h1{font-size:20px;font-weight:700;}
+.logo-text p{font-size:12px;color:var(--text2);margin-top:2px;}
+.header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.lang-toggle{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--border);border-radius:100px;padding:3px;gap:2px;}
+.lang-btn{padding:5px 14px;border-radius:100px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:var(--text3);font-family:inherit;}
+.lang-btn.active{background:var(--purple);color:white;box-shadow:0 2px 10px rgba(123,47,190,.5);}
+.header-badge{display:flex;align-items:center;gap:8px;background:rgba(34,211,160,.1);border:1px solid rgba(34,211,160,.2);border-radius:100px;padding:6px 14px;font-size:12px;color:var(--green);}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Stats */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px 22px;transition:border-color .2s,transform .2s;}
+.stat-card:hover{border-color:rgba(123,47,190,.35);transform:translateY(-2px);}
+.stat-label{font-size:11px;color:var(--text2);margin-bottom:8px;}
+.stat-value{font-size:26px;font-weight:700;line-height:1;}
+.stat-value.purple{color:var(--purple-light);}.stat-value.red{color:var(--red);}.stat-value.yellow{color:var(--yellow);}.stat-value.green{color:var(--green);}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:6px;}
+
+/* Model bar */
+.model-bar{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px 22px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.model-info{display:flex;align-items:center;gap:10px;}
+.model-label{font-size:11px;color:var(--text3);}
+.model-name{font-size:13px;font-weight:600;}
+.model-metrics{display:flex;gap:20px;}
+.model-metric{text-align:center;}
+.model-metric-val{font-size:15px;font-weight:700;color:var(--green);}
+.model-metric-label{font-size:10px;color:var(--text3);margin-top:2px;}
+
+/* Main grid */
+.main-grid{display:grid;grid-template-columns:1fr 390px;gap:24px;}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:20px;overflow:hidden;}
+.panel-header{padding:22px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.panel-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;background:rgba(123,47,190,.18);}
+.panel-title{font-size:15px;font-weight:600;}
+.panel-sub{font-size:12px;color:var(--text2);margin-top:2px;}
+.form-body{padding:28px;}
+
+.section-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin:24px 0 16px;display:flex;align-items:center;gap:8px;}
+.section-label:first-child{margin-top:0;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fields-grid.three{grid-template-columns:1fr 1fr 1fr;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:11px;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:6px;}
+.tip{width:14px;height:14px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);font-size:9px;color:var(--text3);display:inline-flex;align-items:center;justify-content:center;cursor:help;position:relative;}
+.tip:hover::after{content:attr(data-tip);position:absolute;bottom:20px;right:0;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:10px;color:var(--text);white-space:nowrap;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.6);}
+
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--bg4);border-radius:4px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--purple-light);cursor:pointer;border:2px solid var(--bg2);box-shadow:0 0 8px rgba(123,47,190,.6);transition:transform .15s;}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25);}
+.range-row{display:flex;align-items:center;gap:12px;}
+.range-val{min-width:46px;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:13px;font-weight:600;}
+
+.toggle-group{display:flex;gap:5px;}
+.toggle-btn{flex:1;padding:8px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;font-family:inherit;text-align:center;}
+.toggle-btn:hover{border-color:rgba(123,47,190,.4);color:var(--text);}
+.toggle-btn.active{background:rgba(123,47,190,.18);border-color:rgba(123,47,190,.55);color:var(--purple-light);font-weight:600;}
+.toggle-btn.active-green{background:rgba(34,211,160,.1);border-color:rgba(34,211,160,.4);color:var(--green);font-weight:600;}
+
+.submit-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--purple),var(--purple-dark));border:none;border-radius:14px;font-size:15px;font-weight:700;color:white;cursor:pointer;margin-top:24px;font-family:inherit;letter-spacing:.3px;transition:all .2s;position:relative;overflow:hidden;}
+.submit-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);opacity:0;transition:opacity .2s;}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(123,47,190,.45);}
+.submit-btn:hover::before{opacity:1;}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-inner{display:flex;align-items:center;justify-content:center;gap:8px;}
+
+/* Result */
+.result-panel{display:flex;flex-direction:column;gap:16px;}
+.gauge-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:28px;text-align:center;}
+.gauge-title{font-size:11px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;}
+.gauge-wrap{position:relative;width:180px;height:100px;margin:0 auto;}
+.gauge-svg{width:180px;height:100px;overflow:visible;}
+.gauge-track{fill:none;stroke:var(--bg3);stroke-width:14;}
+.gauge-fill{fill:none;stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1),stroke .5s;}
+.gauge-needle{position:absolute;bottom:0;left:50%;width:2px;height:72px;background:var(--text2);transform-origin:bottom center;transform:translateX(-50%) rotate(-90deg);transition:transform 1s cubic-bezier(.4,0,.2,1);border-radius:2px;}
+.gauge-needle::after{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:var(--text);}
+.gauge-pct{font-size:42px;font-weight:800;margin:12px 0 4px;transition:color .5s;}
+.gauge-label{font-size:13px;font-weight:600;padding:4px 18px;border-radius:100px;display:inline-block;margin-bottom:6px;}
+.gauge-conf{font-size:11px;color:var(--text3);}
+
+.factors-card,.recs-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:22px;}
+.card-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:14px;}
+.factor-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;background:var(--bg3);margin-bottom:8px;font-size:12px;color:var(--text2);border:1px solid var(--border);}
+.factor-item:last-child{margin-bottom:0;}
+.factor-item.danger{border-color:rgba(230,57,70,.3);background:rgba(230,57,70,.06);color:var(--text);}
+.factor-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.rec-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);line-height:1.55;}
+.rec-item:last-child{border-bottom:none;padding-bottom:0;}
+.rec-num{width:22px;height:22px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);font-size:10px;font-weight:700;color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+.empty-state{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:52px 28px;text-align:center;}
+.empty-icon{font-size:52px;margin-bottom:16px;opacity:.35;}
+.empty-title{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:8px;}
+.empty-sub{font-size:12px;color:var(--text3);line-height:1.7;}
+
+.disclaimer{margin-top:28px;padding:14px 18px;background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);border-radius:12px;font-size:11px;color:var(--text3);display:flex;align-items:flex-start;gap:10px;line-height:1.6;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 22px;font-size:13px;color:var(--text);box-shadow:0 16px 48px rgba(0,0,0,.6);transition:transform .3s;z-index:200;display:flex;align-items:center;gap:10px;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.error{border-color:rgba(230,57,70,.4);}.toast.success{border-color:rgba(34,211,160,.4);}
+
+.spinner{border-radius:50%;border:3px solid var(--bg3);border-top-color:var(--purple-light);animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.fade-in{animation:fadeIn .4s ease forwards;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+@media(max-width:900px){.main-grid{grid-template-columns:1fr;}.stats-bar{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:580px){.fields-grid,.fields-grid.three{grid-template-columns:1fr;}.header-right{gap:8px;}}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div><div class="bg-glow"></div>
+<div class="toast" id="toast"></div>
+
+<div class="app">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🧠</div>
+      <div class="logo-text">
+        <h1>Alzheimer's Risk AI</h1>
+        <p data-fa="سیستم هوشمند پیش‌بینی خطر آلزایمر | OASIS MRI Dataset" data-en="AI-Powered Alzheimer's Risk Predictor | OASIS MRI Dataset"></p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="lang-toggle">
+        <button class="lang-btn active" id="btnFa" onclick="setLang('fa')">فا</button>
+        <button class="lang-btn" id="btnEn" onclick="setLang('en')">EN</button>
+      </div>
+      <div class="header-badge">
+        <div class="badge-dot"></div>
+        <span data-fa="مدل فعال — AUC: 94.5%" data-en="Model Active — AUC: 94.5%"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Model bar -->
+  <div class="model-bar">
+    <div class="model-info">
+      <span style="font-size:22px">🤖</span>
+      <div>
+        <div class="model-label" data-fa="بهترین مدل انتخاب‌شده" data-en="Best Selected Model"></div>
+        <div class="model-name">Voting Ensemble (LR + RF + LightGBM)</div>
+      </div>
+    </div>
+    <div class="model-metrics">
+      <div class="model-metric"><div class="model-metric-val">94.5%</div><div class="model-metric-label">AUC</div></div>
+      <div class="model-metric"><div class="model-metric-val">82.7%</div><div class="model-metric-label">Recall</div></div>
+      <div class="model-metric"><div class="model-metric-val">85.0%</div><div class="model-metric-label">F1 Score</div></div>
+      <div class="model-metric"><div class="model-metric-val">1200</div><div class="model-metric-label" data-fa="بیمار آموزشی" data-en="Training Patients"></div></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card"><div class="stat-label" data-fa="ارزیابی‌شدگان" data-en="Assessed"></div><div class="stat-value purple" id="totalCount">0</div><div class="stat-sub" data-fa="در این جلسه" data-en="This session"></div></div>
+    <div class="stat-card"><div class="stat-label" data-fa="ریسک بالا" data-en="High Risk"></div><div class="stat-value red" id="highCount">0</div><div class="stat-sub" data-fa="پیگیری فوری" data-en="Urgent follow-up"></div></div>
+    <div class="stat-card"><div class="stat-label" data-fa="ریسک متوسط" data-en="Moderate Risk"></div><div class="stat-value yellow" id="midCount">0</div><div class="stat-sub" data-fa="نیاز به بررسی" data-en="Needs evaluation"></div></div>
+    <div class="stat-card"><div class="stat-label" data-fa="ریسک پایین" data-en="Low Risk"></div><div class="stat-value green" id="lowCount">0</div><div class="stat-sub" data-fa="وضعیت مطلوب" data-en="Acceptable"></div></div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Form -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-icon">🩺</div>
+        <div>
+          <div class="panel-title" data-fa="داده‌های بالینی و تصویربرداری MRI" data-en="Clinical & MRI Imaging Data"></div>
+          <div class="panel-sub" data-fa="اطلاعات را بر اساس پرونده بیمار وارد کنید" data-en="Enter data based on the patient's clinical record"></div>
+        </div>
+      </div>
+      <div class="form-body">
+
+        <div class="section-label" data-fa="اطلاعات جمعیتی" data-en="Demographics"></div>
+        <div class="fields-grid">
+          <div class="field">
+            <label><span data-fa="سن (سال)" data-en="Age (years)"></span> <span class="tip" data-tip-fa="سن بین ۱۸ تا ۱۰۰" data-tip-en="Age 18–100">?</span></label>
+            <div class="range-row"><input type="range" id="Age" min="18" max="100" value="72" oninput="upd('Age','ageVal')"><span class="range-val" id="ageVal">72</span></div>
+          </div>
+          <div class="field">
+            <label><span data-fa="جنسیت" data-en="Sex"></span></label>
+            <div class="toggle-group">
+              <button class="toggle-btn active" id="sex_m" onclick="setSex(1)" data-fa="مرد" data-en="Male"></button>
+              <button class="toggle-btn" id="sex_f" onclick="setSex(0)" data-fa="زن" data-en="Female"></button>
+            </div>
+          </div>
+          <div class="field">
+            <label><span data-fa="سال‌های تحصیل" data-en="Years of Education"></span> <span class="tip" data-tip-fa="ذخیره شناختی = حافظه مقاوم‌تر" data-tip-en="Higher education = better cognitive reserve">?</span></label>
+            <div class="range-row"><input type="range" id="EDUC" min="1" max="25" value="14" oninput="upd('EDUC','educVal')"><span class="range-val" id="educVal">14</span></div>
+          </div>
+          <div class="field">
+            <label><span data-fa="وضعیت اجتماعی-اقتصادی (SES)" data-en="Socioeconomic Status (SES)"></span> <span class="tip" data-tip-fa="۱=بالا، ۵=پایین" data-tip-en="1=High, 5=Low">?</span></label>
+            <div class="toggle-group">
+              <button class="toggle-btn" id="ses_1" onclick="setSES(1)" style="font-size:11px">1</button>
+              <button class="toggle-btn active" id="ses_2" onclick="setSES(2)" style="font-size:11px">2</button>
+              <button class="toggle-btn" id="ses_3" onclick="setSES(3)" style="font-size:11px">3</button>
+              <button class="toggle-btn" id="ses_4" onclick="setSES(4)" style="font-size:11px">4</button>
+              <button class="toggle-btn" id="ses_5" onclick="setSES(5)" style="font-size:11px">5</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-label" data-fa="آزمون‌های شناختی" data-en="Cognitive Assessment"></div>
+        <div class="field">
+          <label>
+            <span data-fa="MMSE — آزمون مختصر وضعیت ذهنی" data-en="MMSE — Mini-Mental State Exam"></span>
+            <span class="tip" data-tip-fa="۳۰=سالم | ۲۴-۲۶=خفیف | زیر ۲۴=اختلال قابل توجه" data-tip-en="30=Normal | 24–26=Mild | Below 24=Significant impairment">?</span>
+          </label>
+          <div class="range-row">
+            <input type="range" id="MMSE" min="0" max="30" value="27" step="1" oninput="upd('MMSE','mmseVal');checkMMSE()">
+            <span class="range-val" id="mmseVal">27</span>
+          </div>
+          <div id="mmse-hint" style="font-size:10px;color:var(--green);margin-top:4px;" data-fa="✅ در محدوده طبیعی" data-en="✅ Normal range"></div>
+        </div>
+
+        <div class="section-label" data-fa="داده‌های تصویربرداری MRI" data-en="MRI Imaging Data"></div>
+        <div class="fields-grid">
+          <div class="field">
+            <label><span data-fa="حجم کل داخل جمجمه‌ای — eTIV (mm³)" data-en="Estimated Total Intracranial Vol. (mm³)"></span> <span class="tip" data-tip-fa="محدوده طبیعی: ۱۱۰۰–۲۰۰۰" data-tip-en="Normal range: 1100–2000">?</span></label>
+            <div class="range-row"><input type="range" id="eTIV" min="900" max="2200" value="1468" step="10" oninput="upd('eTIV','etivVal')"><span class="range-val" id="etivVal">1468</span></div>
+          </div>
+          <div class="field">
+            <label><span data-fa="حجم نرمال‌شده مغز — nWBV" data-en="Normalized Whole Brain Volume (nWBV)"></span> <span class="tip" data-tip-fa="زیر ۰.۷۱: آتروفی بالقوه" data-tip-en="Below 0.71: potential atrophy">?</span></label>
+            <div class="range-row"><input type="range" id="nWBV" min="0.50" max="0.95" value="0.728" step="0.001" oninput="upd('nWBV','nwbvVal');checkNWBV()"><span class="range-val" id="nwbvVal">0.728</span></div>
+          </div>
+          <div class="field">
+            <label><span data-fa="فاکتور مقیاس اطلس — ASF" data-en="Atlas Scaling Factor (ASF)"></span> <span class="tip" data-tip-fa="محدوده طبیعی: ۰.۸۸–۱.۶" data-tip-en="Normal: 0.88–1.6">?</span></label>
+            <div class="range-row"><input type="range" id="ASF" min="0.80" max="1.60" value="1.20" step="0.01" oninput="upd('ASF','asfVal')"><span class="range-val" id="asfVal">1.20</span></div>
+          </div>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="predict()">
+          <span class="btn-inner"><span>🔬</span><span data-fa="تحلیل ریسک آلزایمر" data-en="Analyze Alzheimer's Risk"></span></span>
+        </button>
+
+        <div class="disclaimer">
+          <span style="font-size:14px;flex-shrink:0">⚠️</span>
+          <span data-fa="این ابزار صرفاً برای اهداف پژوهشی و آموزشی است. هرگز جایگزین تشخیص متخصص مغز و اعصاب نشود." data-en="For research and educational purposes only. Never replace a specialist neurologist's diagnosis."></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-panel" id="resultPanel">
+      <div class="empty-state">
+        <div class="empty-icon">🧠</div>
+        <div class="empty-title" data-fa="منتظر ورودی داده‌های بیمار" data-en="Awaiting Patient Data Input"></div>
+        <div class="empty-sub" data-fa="داده‌های بالینی و MRI را وارد کرده<br>و دکمه تحلیل را بزنید" data-en="Enter clinical and MRI data,<br>then press the Analyze button"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let lang = 'fa';
+let state = {Age:72,Sex:1,EDUC:14,SES:2,MMSE:27,eTIV:1468,nWBV:0.728,ASF:1.20};
+let stats = {total:0,high:0,mid:0,low:0};
+let lastRes = null;
+
+function setLang(l){
+  lang=l;
+  document.documentElement.lang=l;
+  document.documentElement.dir=l==='fa'?'rtl':'ltr';
+  document.body.classList.toggle('lang-en',l==='en');
+  document.getElementById('btnFa').classList.toggle('active',l==='fa');
+  document.getElementById('btnEn').classList.toggle('active',l==='en');
+  document.querySelectorAll('[data-fa]').forEach(el=>{
+    el.textContent=el.getAttribute('data-'+l)||el.textContent;
+  });
+  document.querySelectorAll('[data-tip-fa]').forEach(el=>{
+    el.setAttribute('data-tip',el.getAttribute('data-tip-'+l));
+  });
+  checkMMSE(); checkNWBV();
+  if(lastRes) renderResult(lastRes);
+}
+
+function t(fa,en){return lang==='fa'?fa:en;}
+
+function upd(id,displayId){
+  state[id]=parseFloat(document.getElementById(id).value);
+  document.getElementById(displayId).textContent=state[id];
+}
+function setSex(v){
+  state.Sex=v;
+  document.getElementById('sex_m').className='toggle-btn'+(v===1?' active':'');
+  document.getElementById('sex_f').className='toggle-btn'+(v===0?' active':'');
+}
+function setSES(v){
+  state.SES=v;
+  [1,2,3,4,5].forEach(i=>document.getElementById('ses_'+i).className='toggle-btn'+(i===v?' active':''));
+}
+function checkMMSE(){
+  const el=document.getElementById('mmse-hint');
+  const v=state.MMSE;
+  if(v>=27){el.style.color='var(--green)';el.textContent=t('✅ محدوده طبیعی','✅ Normal range');}
+  else if(v>=24){el.style.color='var(--yellow)';el.textContent=t('⚠️ کاهش خفیف شناختی','⚠️ Mild cognitive decline');}
+  else{el.style.color='var(--red)';el.textContent=t('🔴 اختلال شناختی قابل توجه','🔴 Significant cognitive impairment');}
+}
+function checkNWBV(){
+  document.getElementById('nwbvVal').style.color=state.nWBV<0.71?'var(--red)':'var(--text)';
+}
+
+function engineer(d){
+  return {
+    ...d,
+    MMSE_deficit:       30-d.MMSE,
+    brain_atrophy_rate: (1-d.nWBV)/(d.Age/100),
+    cog_reserve:        d.EDUC*d.nWBV,
+    brain_vol_ratio:    d.nWBV*d.eTIV/1500,
+    age_mmse_risk:      (d.Age/100)*(30-d.MMSE),
+    social_risk:        d.SES*(1/(d.EDUC+1)),
+    mmse_impaired:      d.MMSE<24?1:0,
+    elderly:            d.Age>75?1:0,
+    asf_deviation:      Math.abs(d.ASF-1.19),
+    neuro_risk_score:   (30-d.MMSE)*0.35+(1-d.nWBV)/(d.Age/100)*2+(d.SES*(1/(d.EDUC+1)))*0.5+((d.Age/100)*(30-d.MMSE))*3+(5-d.SES)*0.2+(d.Age>75?1.5:0),
+  };
+}
+
+function computeRisk(d){
+  const f=engineer(d);
+  let logit=-5.5;
+  logit+=f.MMSE_deficit*0.32;
+  logit+=f.brain_atrophy_rate*1.8;
+  logit+=f.age_mmse_risk*1.2;
+  logit+=f.social_risk*0.6;
+  logit+=(f.Age-65)/20*0.9;
+  logit+=(f.Sex===1?0.3:0);
+  logit+=(1-f.nWBV)*8;
+  logit+=(f.EDUC<10?0.5:f.EDUC<14?0.2:-0.15);
+  logit+=(f.SES>=4?0.45:f.SES>=3?0.15:0);
+  logit+=f.mmse_impaired*1.2;
+  logit+=f.elderly*0.8;
+  logit+=(f.eTIV<1300?0.4:0);
+  return Math.min(Math.max(1/(1+Math.exp(-logit)),0.02),0.98);
+}
+
+function getRiskFactors(d){
+  const f=[];
+  if(d.Age>75)    f.push({icon:'🔴',fa:`سن پیشرفته (${d.Age.toFixed(0)} سال)`,en:`Advanced age (${d.Age.toFixed(0)} yrs)`,danger:true});
+  if(d.MMSE<24)   f.push({icon:'🔴',fa:`اختلال شناختی (MMSE=${d.MMSE.toFixed(0)})`,en:`Cognitive impairment (MMSE=${d.MMSE.toFixed(0)})`,danger:true});
+  else if(d.MMSE<27) f.push({icon:'🟠',fa:`کاهش خفیف شناختی (MMSE=${d.MMSE.toFixed(0)})`,en:`Mild decline (MMSE=${d.MMSE.toFixed(0)})`,danger:false});
+  if(d.nWBV<0.71) f.push({icon:'🔴',fa:`آتروفی مغزی (nWBV=${d.nWBV.toFixed(3)})`,en:`Brain atrophy (nWBV=${d.nWBV.toFixed(3)})`,danger:true});
+  if(d.SES>=4)    f.push({icon:'🟠',fa:`ریسک اجتماعی-اقتصادی بالا (SES=${d.SES})`,en:`High socioeconomic risk (SES=${d.SES})`,danger:false});
+  if(d.EDUC<10)   f.push({icon:'🟠',fa:'ذخیره شناختی پایین (تحصیلات کم)',en:'Low cognitive reserve (low education)',danger:false});
+  if(d.Sex===1)   f.push({icon:'🟡',fa:'جنس مذکر (نرخ آتروفی بالاتر)',en:'Male sex (higher atrophy rate)',danger:false});
+  if(d.eTIV<1300) f.push({icon:'🟠',fa:`حجم جمجمه کوچک (${d.eTIV.toFixed(0)} mm³)`,en:`Small intracranial volume (${d.eTIV.toFixed(0)} mm³)`,danger:false});
+  if(!f.length)   f.push({icon:'🟢',fa:'هیچ عامل خطر مهمی شناسایی نشد',en:'No major risk factors identified',danger:false});
+  return f;
+}
+
+function getRecs(level){
+  return {
+    HIGH:[
+      {fa:'مراجعه فوری به متخصص مغز و اعصاب',en:'Immediate neurology consultation'},
+      {fa:'باتری کامل آزمون‌های نوروسایکولوژیک',en:'Comprehensive neuropsychological battery'},
+      {fa:'MRI حجم‌سنجی مغز و PET اسکن آمیلوئید',en:'Brain MRI volumetry and PET amyloid scan'},
+      {fa:'بررسی داروهای آنتی‌کولینرژیک',en:'Review anticholinergic medication burden'},
+      {fa:'برنامه تحریک شناختی و مشاوره خانوادگی',en:'Cognitive stimulation programme and family counselling'},
+    ],
+    MODERATE:[
+      {fa:'ارجاع به متخصص اعصاب ظرف ۴ هفته',en:'Neurology referral within 4 weeks'},
+      {fa:'تکرار ارزیابی شناختی در ۶ ماه آینده',en:'Repeat cognitive assessment in 6 months'},
+      {fa:'بهینه‌سازی عوامل ریسک قلبی‌عروقی',en:'Cardiovascular risk factor optimisation'},
+      {fa:'رژیم مدیترانه‌ای و ورزش هوازی منظم',en:'Mediterranean diet and regular aerobic exercise'},
+    ],
+    LOW:[
+      {fa:'ادامه غربالگری شناختی سالانه',en:'Continue annual cognitive screening'},
+      {fa:'سبک زندگی فعال جسمی و ذهنی',en:'Maintain physically and mentally active lifestyle'},
+      {fa:'رژیم غذایی سرشار از امگا-۳',en:'Diet rich in omega-3 fatty acids'},
+      {fa:'کنترل فشار خون و قند خون',en:'Manage blood pressure and blood sugar'},
+    ],
+  }[level];
+}
+
+function renderResult(res){
+  const {prob,pct,level,levelColor,levelBg,margin}=res;
+  const levelLabelFa=level==='HIGH'?'ریسک بالا':level==='MODERATE'?'ریسک متوسط':'ریسک پایین';
+  const levelLabelEn=level==='HIGH'?'High Risk':level==='MODERATE'?'Moderate Risk':'Low Risk';
+  const levelLabel=lang==='fa'?levelLabelFa:levelLabelEn;
+  const confFa=margin>=.35?'بسیار بالا':margin>=.2?'بالا':margin>=.1?'متوسط':'پایین';
+  const confEn=margin>=.35?'Very High':margin>=.2?'High':margin>=.1?'Moderate':'Low';
+  const conf=lang==='fa'?confFa:confEn;
+  const circ=80*Math.PI;
+  const dashOff=circ*(1-prob);
+  const needle=-90+prob*180;
+  const stroke=level==='HIGH'?'#E63946':level==='MODERATE'?'#F59E0B':'#22d3a0';
+  const factors=getRiskFactors(state);
+  const recs=getRecs(level);
+  const gaugeTitle=t('سطح ریسک آلزایمر','Alzheimer\'s Risk Level');
+  const confPre=t('اطمینان:','Confidence:');
+  const factTitle=t('⚠️ عوامل خطر','⚠️ Risk Factors');
+  const recTitle=t('💊 توصیه‌های بالینی','💊 Clinical Recommendations');
+  const gL=t('پایین','Low');const gM=t('متوسط','Mid');const gH=t('بالا','High');
+
+  document.getElementById('resultPanel').innerHTML=`
+  <div class="gauge-card fade-in">
+    <div class="gauge-title">${gaugeTitle}</div>
+    <div class="gauge-wrap">
+      <svg class="gauge-svg" viewBox="0 0 180 100">
+        <path class="gauge-track" d="M 10,90 A 80,80 0 0,1 170,90" stroke-linecap="round"/>
+        <path class="gauge-fill" d="M 10,90 A 80,80 0 0,1 170,90" stroke="${stroke}"
+          stroke-dasharray="${circ}" stroke-dashoffset="${dashOff}"/>
+        <text x="10" y="108" font-size="9" fill="#5A4880" font-family="Vazirmatn,DM Sans">${gL}</text>
+        <text x="80" y="14" font-size="9" fill="#5A4880" font-family="Vazirmatn,DM Sans" text-anchor="middle">${gM}</text>
+        <text x="168" y="108" font-size="9" fill="#5A4880" font-family="Vazirmatn,DM Sans" text-anchor="end">${gH}</text>
+      </svg>
+      <div class="gauge-needle" style="transform:translateX(-50%) rotate(${needle}deg)"></div>
+    </div>
+    <div class="gauge-pct" style="color:${levelColor}">${pct}%</div>
+    <span class="gauge-label" style="color:${levelColor};background:${levelBg}">${levelLabel}</span>
+    <div class="gauge-conf">${confPre} ${conf}</div>
+  </div>
+  <div class="factors-card fade-in" style="animation-delay:.1s">
+    <div class="card-title">${factTitle}</div>
+    ${factors.map(f=>`<div class="factor-item ${f.danger?'danger':''}"><span class="factor-icon">${f.icon}</span><span>${lang==='fa'?f.fa:f.en}</span></div>`).join('')}
+  </div>
+  <div class="recs-card fade-in" style="animation-delay:.2s">
+    <div class="card-title">${recTitle}</div>
+    ${recs.map((r,i)=>`<div class="rec-item"><span class="rec-num">${i+1}</span><span>${lang==='fa'?r.fa:r.en}</span></div>`).join('')}
+  </div>`;
+}
+
+async function predict(){
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true;
+  const loadTxt=t('در حال تحلیل...','Analyzing...');
+  btn.querySelector('.btn-inner').innerHTML=`<span class="spinner" style="width:18px;height:18px;border-width:2px"></span><span>${loadTxt}</span>`;
+  await new Promise(r=>setTimeout(r,900));
+
+  const prob=computeRisk(state);
+  const pct=Math.round(prob*100);
+  const level=prob>=.70?'HIGH':prob>=.40?'MODERATE':'LOW';
+  const margin=Math.abs(prob-.5);
+  const levelColor=level==='HIGH'?'var(--red)':level==='MODERATE'?'var(--yellow)':'var(--green)';
+  const levelBg=level==='HIGH'?'rgba(230,57,70,.18)':level==='MODERATE'?'rgba(245,158,11,.15)':'rgba(34,211,160,.12)';
+
+  lastRes={prob,pct,level,levelColor,levelBg,margin};
+
+  stats.total++;
+  if(level==='HIGH')stats.high++;
+  else if(level==='MODERATE')stats.mid++;
+  else stats.low++;
+  ['total','high','mid','low'].forEach(k=>document.getElementById(k+'Count').textContent=stats[k]);
+
+  renderResult(lastRes);
+
+  btn.disabled=false;
+  const btnTxt=t('تحلیل ریسک آلزایمر','Analyze Alzheimer\'s Risk');
+  btn.querySelector('.btn-inner').innerHTML=`<span>🔬</span><span>${btnTxt}</span>`;
+  const toastMsg=level==='HIGH'?t('🔴 ریسک بالا شناسایی شد','🔴 High Risk Detected'):level==='MODERATE'?t('🟡 ریسک متوسط','🟡 Moderate Risk'):t('🟢 ریسک پایین','🟢 Low Risk');
+  showToast(toastMsg,level==='HIGH'?'error':'success');
+}
+
+function showToast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=`toast ${type} show`;
+  setTimeout(()=>el.className=`toast ${type}`,2800);
+}
+
+// Init
+setLang('fa');
+checkMMSE();
+</script>
+</body>
+</html>
